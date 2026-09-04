@@ -1,0 +1,29 @@
+# 약재검색포털 — 웹 루트 보호
+
+# 디렉터리 기본 문서
+DirectoryIndex index.php index.html
+
+# 설정 · 스키마 파일 직접 접근 차단
+<FilesMatch "^(config\.php|auth\.php|schema\.sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 디렉터리 목록 노출 금지
+Options -Indexes
+
+# 백업 · 편집기 임시 파일 차단
+<FilesMatch "(\.(bak|sql|log|ini|sh)|~)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
