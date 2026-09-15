@@ -128,7 +128,7 @@ function render_login(?string $error = null): void
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#241109">
-<title>약재검색포털</title>
+<title>약재검색</title>
 <style>
   :root{
     --wood-1:#4a3421; --wood-2:#31210f; --wood-3:#241109;
@@ -146,9 +146,9 @@ function render_login(?string $error = null): void
     background-attachment:fixed; -webkit-text-size-adjust:100%;
   }
   .box{ width:100%; max-width:360px; text-align:center; }
-  .seal{ width:64px; height:64px; margin:0 auto 16px; border-radius:12px; display:grid; place-items:center;
-    font-size:32px; font-weight:800; color:#fff5df; background:linear-gradient(145deg,#8a2e26,#651e18);
-    border:2px solid #d9a24b; box-shadow:inset 0 1px 2px rgba(255,255,255,.25), 0 3px 10px rgba(0,0,0,.45); }
+  /* 대표 로고 — index.php 헤더와 같은 파일. 회색 글자를 크림톤으로 바꾼 다크배경용 PNG.
+     로그인 화면은 로그인 전에 뜨므로 logo.png 는 인증 없이 열려 있어야 한다(정적 파일이라 그대로 열림). */
+  .logo{ height:64px; width:auto; max-width:80%; margin:0 auto 16px; display:block; object-fit:contain; }
   h1{ font-size:21px; color:var(--hanji); letter-spacing:.5px; }
   .sub{ font-size:12px; color:#c9b384; margin-top:4px; letter-spacing:2px; margin-bottom:22px; }
   form{ display:flex; flex-direction:column; gap:10px; }
@@ -171,8 +171,8 @@ function render_login(?string $error = null): void
 </head>
 <body>
   <div class="box">
-    <div class="seal">藥</div>
-    <h1>약재검색포털</h1>
+    <img class="logo" src="logo.png" alt="삼희건재">
+    <h1>약재검색</h1>
     <p class="sub">藥材檢索</p>
     <?php if (!$configured): ?>
       <div class="setup">
