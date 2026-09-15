@@ -41,10 +41,10 @@ $CSRF = csrf_token();
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="약재검색포털">
+<meta name="apple-mobile-web-app-title" content="약재검색">
 <meta name="theme-color" content="#241109">
 <meta name="format-detection" content="telephone=no">
-<title>약재검색포털</title>
+<title>약재검색</title>
 <style>
   :root{
     --wood-1:#4a3421; --wood-2:#31210f; --wood-3:#241109;
@@ -78,11 +78,16 @@ $CSRF = csrf_token();
     box-shadow:0 6px 18px rgba(0,0,0,.35);
   }
   .plate{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-  /* 대표 로고 — 투명 PNG 라 어두운 목재 배경 위에 그대로 얹힌다 */
-  .logo{ flex:0 0 auto; height:46px; width:auto; max-width:40vw; object-fit:contain; display:block; }
+  /* 대표 로고 — 투명 PNG 라 어두운 목재 배경 위에 그대로 얹힌다.
+     가로로 긴 워드마크라 같은 높이의 도장보다 2.6배 넓다. 아래 좁은 폰 규칙과 함께 봐야 한다. */
+  .logo{ flex:0 0 auto; height:44px; width:auto; object-fit:contain; display:block; }
   .titles{ flex:1 1 auto; min-width:0; }
-  .titles h1{ font-size:19px; letter-spacing:.5px; color:var(--hanji); font-weight:800; }
-  .titles p{ font-size:12px; color:#c9b384; margin-top:2px; letter-spacing:2px; }
+  /* 제목·부제는 절대 두 줄로 흐르지 않게 한다. 자리가 모자라면 말줄임으로 끝낸다 */
+  .titles h1{ font-size:19px; letter-spacing:.5px; color:var(--hanji); font-weight:800;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* 자간 0 — 제목(약재검색 71.9px)과 폭을 맞춘 값(73.5px). 자간 2px 이면 91.5px 로 제목보다 넓어진다 */
+  .titles p{ font-size:12px; color:#c9b384; margin-top:2px; letter-spacing:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .impBtn{ flex:0 0 auto; font-size:12.5px; font-weight:700; color:#3a2a17;
     background:linear-gradient(180deg,#f0d488,#c9a24b); border:1px solid #9c7a30; border-radius:10px;
     padding:8px 11px; cursor:pointer; white-space:nowrap; box-shadow:0 2px 5px rgba(0,0,0,.3); }
@@ -112,6 +117,15 @@ $CSRF = csrf_token();
   @media(min-width:768px){  main{ grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; } } /* 태블릿 */
   @media(min-width:1024px){ main{ grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; } } /* PC */
   @media(min-width:1400px){ main{ grid-template-columns:repeat(6,minmax(0,1fr)); } }           /* 대형 PC */
+
+  /* 좁은 폰 — 헤더 한 줄에 로고·제목·버튼이 모두 들어가야 한다.
+     360px 부터 제목이 한 줄로 떨어지는 것을 실측해 정한 값. */
+  @media(max-width:480px){
+    .logo{ height:38px; }
+    .titles h1{ font-size:18px; }
+    .titles p{ font-size:11px; }
+    .impBtn{ font-size:12px; padding:7px 9px; }
+  }
 
   .drawer{ container-type:inline-size; position:relative; text-align:center; cursor:pointer; border:0; font-family:inherit; color:var(--ink);
     padding:16px 10px 16px; border-radius:9px; background:linear-gradient(180deg,var(--hanji),var(--hanji-2));
@@ -272,7 +286,7 @@ $CSRF = csrf_token();
   <div class="plate" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:8px;align-items:center;">
     <div style="display:flex;align-items:center;gap:10px;min-width:0;">
       <img class="logo" src="logo.png" alt="삼희건재">
-      <div class="titles"><h1>약재검색포털</h1><p>韓 藥 保 管 欌</p></div>
+      <div class="titles"><h1>약재검색</h1><p>韓 藥 保 管 欌</p></div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:6px;">
       <button class="impBtn" id="dataBtn">⇅ 데이터</button>
