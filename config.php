@@ -26,7 +26,7 @@ const DB_PASS = 'MySQL비밀번호';
    반드시 작은따옴표를 쓰세요. 큰따옴표를 쓰면 $ 가 변수로 해석돼 로그인이 실패합니다.
 
    아래는 교체 전 자리표시자입니다. 그대로 두면 로그인 화면에 설정 안내가 뜹니다. */
-const APP_PASSWORD_HASH = 'PUT_YOUR_PASSWORD_HASH_HERE';
+const APP_PASSWORD_HASH = '$2y$12$o8h6J9.PchbrefCzVu/7RO7/VRxueWKJwWKf1tjI1uiyrXZCtdevK';
 
 /* ── 세션 유지 시간 (초). 기본 12시간 ── */
 const SESSION_LIFETIME = 43200;
