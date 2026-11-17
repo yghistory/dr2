@@ -27,6 +27,7 @@ const DB_PASS = 'MySQL비밀번호';
 
    아래는 교체 전 자리표시자입니다. 그대로 두면 로그인 화면에 설정 안내가 뜹니다. */
 const APP_PASSWORD_HASH = '$2y$12$o8h6J9.PchbrefCzVu/7RO7/VRxueWKJwWKf1tjI1uiyrXZCtdevK';
+const APP_EDIT_PASSWORD_HASH = '$2y$12$6t0W4Nl/0KbCSZPTN3Lqs.a.179uTC8UZoJrCqtlk0YiidCnX2EJy';
 
 /* ── 세션 유지 시간 (초). 기본 12시간 ── */
 const SESSION_LIFETIME = 43200;
