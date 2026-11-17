@@ -33,6 +33,7 @@ if (!is_logged_in()) {
 }
 
 $CSRF = csrf_token();
+$CAN_EDIT = can_edit();
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -278,9 +279,13 @@ $CSRF = csrf_token();
     color:#e4d4ac; font-size:14px; font-weight:700; }
   .zonebanner button{ margin-left:auto; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
     background:var(--hanji); color:var(--ink); border:0; border-radius:9px; padding:7px 12px; }
+
+  /* 보기 전용 비밀번호 - 추가 버튼과 데이터 메뉴를 감추고, 카드를 눌러도 팝업이 열리지 않는다(서버도 쓰기를 막는다) */
+  .readonly .fab, .readonly #dataBtn{ display:none; }
+  .readonly .drawer, .readonly .maptbl .mcell{ cursor:default; }
 </style>
 </head>
-<body>
+<body<?= $CAN_EDIT ? '' : ' class="readonly"' ?>>
 
 <header>
   <div class="plate" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:8px;align-items:center;">
@@ -301,8 +306,7 @@ $CSRF = csrf_token();
   <div class="tabs" id="tabs">
     <button class="tab on" data-view="search" type="button">🔍 검색</button>
     <button class="tab" data-view="map" type="button">🗂 전체 배치도</button>
-    <!-- 창고위치 탭 — 당장 안 써서 숨김. 다시 쓰려면 style 속성만 지우면 됩니다. -->
-    <button class="tab" data-view="zone" type="button" style="display:none">📦 창고위치</button>
+    <button class="tab" data-view="zone" type="button">📦 창고위치</button>
   </div>
   <div class="search">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7a6647" stroke-width="2.2">
@@ -340,14 +344,11 @@ $CSRF = csrf_token();
     <div class="seclabel">🗄 약장(검색) 위치</div>
     <div class="row2">
       <div class="field"><label>열 (세로)</label>
-        <select id="f_yeol"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>R</option></select></div>
+        <select id="f_yeol"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>R</option><option>T</option><option>S</option></select></div>
       <div class="field"><label>행 (가로)</label><input id="f_haeng" type="number" inputmode="numeric" min="1" max="18" placeholder="1~18"></div>
     </div>
-    <!-- 창고 위치 입력 — 창고위치 탭과 함께 숨김. 다시 쓰려면 두 style 속성만 지우면 됩니다.
-         입력칸은 그대로 두어야 합니다(값을 읽고 쓰는 코드가 이 id들을 참조하며,
-         숨긴 동안에도 기존 창고 위치 값이 저장 시 유지됩니다). -->
-    <div class="seclabel" style="display:none">🏬 창고 위치 <span style="color:#a2916f;font-weight:400">· 약장과 별개</span></div>
-    <div class="row2" style="display:none">
+    <div class="seclabel">🏬 창고 위치 <span style="color:#a2916f;font-weight:400">· 약장과 별개</span></div>
+    <div class="row2">
       <div class="field"><label>구역 (A~Z)</label><input id="f_zone" placeholder="예: C" autocapitalize="characters" maxlength="2"></div>
       <div class="field"><label>열</label><input id="f_wyeol" type="number" inputmode="numeric" min="1" placeholder="1"></div>
       <div class="field"><label>행</label><input id="f_whaeng" type="number" inputmode="numeric" min="1" placeholder="1"></div>
@@ -365,11 +366,10 @@ $CSRF = csrf_token();
   <h2>데이터 <span>· 가져오기 / 내보내기</span></h2>
   <div class="datagrp">📥 가져오기 <em>엑셀·구글시트에서 표 복사 → 붙여넣기</em></div>
   <button type="button" class="btn2" id="d_impPos">약재위치 가져오기 <em>약장 열·행 배치도</em></button>
-  <!-- 약재창고 항목 2개 — 창고위치 탭과 함께 숨김. 다시 쓰려면 style 속성만 지우면 됩니다. -->
-  <button type="button" class="btn2" id="d_impWare" style="display:none">약재창고 가져오기 <em>구역·열·행</em></button>
+  <button type="button" class="btn2" id="d_impWare">약재창고 가져오기 <em>구역·열·행</em></button>
   <div class="datagrp">📤 내보내기 <em>클립보드 복사 → 엑셀에 붙여넣기</em></div>
   <button type="button" class="btn2" id="d_expPos">약재위치 내보내기 <em>약장 배치도</em></button>
-  <button type="button" class="btn2" id="d_expWare" style="display:none">약재창고 내보내기 <em>구역별 배치</em></button>
+  <button type="button" class="btn2" id="d_expWare">약재창고 내보내기 <em>구역별 배치</em></button>
 </div>
 
 <div class="sheet" id="importSheet" role="dialog" aria-modal="true">
@@ -391,6 +391,7 @@ $CSRF = csrf_token();
    데이터는 MariaDB 에 있고, 저장하면 곧바로 서버에 반영됩니다.
    세션이 끊기면(401) 로그인 화면으로 되돌아갑니다. */
 const CSRF = <?= json_encode($CSRF, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?>;
+const CAN_EDIT = <?= $CAN_EDIT ? 'true' : 'false' ?>;   // 수정 비밀번호로 들어왔을 때만 true
 
 async function api(action, payload){
   const opt = payload
@@ -444,7 +445,7 @@ let state = [];
 let activeCat = "전체";
 let query = "";
 let view = "search";
-const YEOL_ORDER=["1","2","3","4","5","6","7","8","9","R"];
+const YEOL_ORDER=["1","2","3","4","5","6","7","8","9","R","T","S"];   // 화면 순서 그대로(R 다음 T, S). 바꾸면 f_yeol 옵션과 parseGrid 의 열 라벨 정규식도 같이 바꾼다
 const HAENG_ORDER=Array.from({length:18},(_,i)=>String(i+1));
 
 function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
@@ -724,7 +725,7 @@ function renderZoneDetail(el, zk){
   el.querySelectorAll(".mcell").forEach(c=>{ c.onclick=()=>openSheet(c.dataset.id); });
 }
 
-/* ── 전체 배치도(약장) 렌더 · 열 1~R × 행 1~18 단일 표 ── */
+/* ── 전체 배치도(약장) 렌더 · 열(YEOL_ORDER) × 행 1~18 단일 표 ── */
 function renderMap(){
   const el=document.getElementById("map");
   const queries=buildQueries(query);
@@ -762,6 +763,7 @@ backdrop.onclick=closeSheet;
 
 function fillCatSelect(){ F("f_cat").innerHTML=Object.keys(CATS).map(k=>`<option value="${k}">${esc(CATS[k].label)}</option>`).join(""); }
 function openSheet(id){
+  if(!CAN_EDIT) return;   // 보기 전용 - 카드, 배치도 칸, + 버튼이 모두 여기를 거친다
   const h=state.find(x=>x.id===id);
   F("f_id").value=h?h.id:""; F("sheetTitle").innerHTML=h?`약재 수정 <span>· ${esc(h.name)}</span>`:"약재 추가";
   F("f_name").value=h?.name||""; F("f_hanja").value=h?.hanja||""; F("f_cat").value=h?.cat||"기타";
@@ -810,7 +812,7 @@ document.getElementById("search").addEventListener("input",e=>{ query=e.target.v
 
 /* ── 데이터 메뉴 ── */
 let importMode="pos";   // "pos"(약재위치) | "ware"(약재창고)
-document.getElementById("dataBtn").onclick=()=>{ openBackdrop(); dataSheet.classList.add("on"); };
+document.getElementById("dataBtn").onclick=()=>{ if(!CAN_EDIT) return; openBackdrop(); dataSheet.classList.add("on"); };
 document.getElementById("d_impPos").onclick=()=>openImport("pos");
 document.getElementById("d_impWare").onclick=()=>openImport("ware");
 document.getElementById("d_expPos").onclick=()=>{ copyClip(buildPosTSV(), "약재위치"); closeSheet(); };
@@ -821,7 +823,7 @@ function openImport(mode){
   F("imp_title").innerHTML = mode==="ware" ? '약재창고 가져오기 <span>· 구역·열·행</span>' : '약재위치 가져오기 <span>· 약장 열·행</span>';
   F("imp_help").innerHTML = mode==="ware"
     ? '창고 배치표를 붙여넣으세요. <b>"A구역"</b>을 한 줄에 적고 그 아래 <b>머리글(1행~)</b>·<b>열 라벨(1열~)</b> 표를 두면, 이름이 같은 약재의 <b>창고 위치</b>가 갱신됩니다.'
-    : '<b>약장 배치도</b>를 붙여넣으세요(머리글 <b>1행~18행</b> 포함). <b>열 라벨(1열~R열)</b> 자동 인식, <b>"-"</b>·빈칸은 건너뜁니다. 이름이 같으면 <b>약장 위치</b>가 갱신됩니다.';
+    : '<b>약장 배치도</b>를 붙여넣으세요(머리글 <b>1행~18행</b> 포함). <b>열 라벨(1열~9열, R열, T열, S열)</b> 자동 인식, <b>"-"</b>·빈칸은 건너뜁니다. 이름이 같으면 <b>약장 위치</b>가 갱신됩니다.';
   F("imp_replabel").innerHTML = mode==="ware"
     ? '적용 전 기존 <b>창고 위치</b>를 모두 비우기 (해제 시: 이름 같으면 갱신, 없으면 추가)'
     : '기존 데이터를 <b>전부 교체</b> (해제 시: 이름 같으면 위치만 갱신, 나머지는 추가)';
@@ -837,16 +839,16 @@ function parseGrid(text, wantZone){
   let rows=lines.map(l=>l.split("\t"));
   if(!rows.some(r=>r.length>1)) rows=lines.map(l=>l.split(/ {2,}|,/));
   const zoneRe=/^([A-Za-z])\s*(?:구역|zone|존)$|^(?:구역|zone)\s*([A-Za-z])$/i;
-  const isHeader=r=>{ const f=(r[0]||"").trim(); return !/^(\d+|R)\s*열/.test(f) && r.filter(c=>/(\d+)\s*행/.test(c)).length>=1; };
+  const isHeader=r=>{ const f=(r[0]||"").trim(); return !/^(\d+|[RTS])\s*열/.test(f) && r.filter(c=>/(\d+)\s*행/.test(c)).length>=1; };
   const out=[]; let colRow=null, curCol="", curZone="", sawHeader=false;
   rows.forEach(r=>{
     const first=(r[0]||"").trim();
     if(wantZone){ const zm=first.match(zoneRe); if(zm && r.filter(c=>c.trim()).length<=1){ curZone=(zm[1]||zm[2]).toUpperCase(); curCol=""; colRow=null; return; } }
     if(isHeader(r)){ colRow={}; r.forEach((c,ci)=>{ const m=c.match(/(\d+)\s*행/); if(m) colRow[ci]=m[1]; }); sawHeader=true; curCol=""; return; }
-    const ym=first.match(/^(\d+|R)\s*열/); if(ym) curCol=ym[1];
+    const ym=first.match(/^(\d+|[RTS])\s*열/); if(ym) curCol=ym[1];
     r.forEach((cell,ci)=>{
       let val=(cell||"").trim(); if(!val) return;
-      if(/^(\d+|R)\s*열$/.test(val)) return;
+      if(/^(\d+|[RTS])\s*열$/.test(val)) return;
       if(/^\d+\s*행$/.test(val)) return;
       if(wantZone && zoneRe.test(val)) return;
       if(["-","–","—","--",".","·"].includes(val)) return;
