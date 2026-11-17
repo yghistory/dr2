@@ -61,14 +61,29 @@ function is_logged_in(): bool
 function login(string $password): bool
 {
     app_session_start();
-    if (!is_configured() || !password_verify($password, APP_PASSWORD_HASH)) {
+    if (!is_configured()) {
+        return false;
+    }
+    /* 수정 비밀번호를 먼저 본다. 서버 config.php 에 상수가 없으면 보기 전용 로그인만 된다 */
+    if (defined('APP_EDIT_PASSWORD_HASH') && password_verify($password, APP_EDIT_PASSWORD_HASH)) {
+        $role = 'edit';
+    } elseif (password_verify($password, APP_PASSWORD_HASH)) {
+        $role = 'view';
+    } else {
         return false;
     }
     session_regenerate_id(true);          /* 세션 고정 공격 방지 */
     $_SESSION['auth'] = true;
+    $_SESSION['role'] = $role;
     $_SESSION['seen'] = time();
     $_SESSION['csrf'] = bin2hex(random_bytes(32));
     return true;
+}
+
+/* 수정 권한 - 수정 비밀번호로 로그인한 세션만. role 이 없는 세션(권한을 나누기 전에 로그인)은 보기 전용 */
+function can_edit(): bool
+{
+    return is_logged_in() && ($_SESSION['role'] ?? '') === 'edit';
 }
 
 function logout(): void
