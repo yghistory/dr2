@@ -128,6 +128,10 @@ try {
     if (!csrf_valid($body['csrf'] ?? null)) {
         fail('보안 토큰이 만료되었습니다. 새로고침 후 다시 시도하세요', 401);
     }
+    /* POST 는 모두 쓰기(upsert, delete, bulk, seed) - 보기 전용 비밀번호로 들어온 세션은 막는다 */
+    if (!can_edit()) {
+        fail('수정 권한이 없습니다', 403);
+    }
 
     $action = (string)($body['action'] ?? '');
 
